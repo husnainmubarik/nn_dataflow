@@ -4,6 +4,7 @@ import pdb
 
 sys.path.append('/home/mubarik3/DASICS/mult_exploration/mult_synthesis')
 sys.path.append('../')
+sys.path.append('../../tensorflow_backend')
 
 from nn_dataflow.core import Cost
 from nn_dataflow.core import InputLayer, ConvLayer, FCLayer
@@ -20,6 +21,8 @@ from nn_dataflow.tools.nn_dataflow_search import *
 
 # value aware imports 
 from read_json import readValueMult8Cost, readValueControl8Cost
+from read_weights import read_weights, convertToArray
+from tf_models import quantizeWeights
 
 class TestNNDataflow(unittest.TestCase):
     ''' Tests for NNDataflow module. '''
@@ -27,6 +30,7 @@ class TestNNDataflow(unittest.TestCase):
     def __init__(self):
 
         self.alex_net = import_network('alex_net')
+        self.mock_net = import_network('mock_net')
         
         self.map_strategy = MapStrategyEyeriss
         
@@ -46,7 +50,8 @@ class TestNNDataflow(unittest.TestCase):
         '''
         Reproduce TETRIS ASPLOS'17 paper Figure 8.
         '''
-        network = self.alex_net
+        #network = self.alex_net
+        network = self.mock_net
 
         batch_size = 16
 
@@ -71,15 +76,29 @@ class TestNNDataflow(unittest.TestCase):
                             no_time_mux=False,
                            )
 
+        
+        # model values
+        weights_dict = read_weights()
+        array = convertToArray(weights_dict, 'conv1')
+        array_qint8 = quantizeWeights(array, 'qint8')
+        
+        
+        # hardware costs
         mult_cost = readValueMult8Cost()
         control_cost = readValueControl8Cost()
-
+        
         cost = Cost(value_control=control_cost,
                     value_mult=mult_cost,
                     mac_op=2e-12,
-                    mem_hier=(80e-12, 14e-12, 4e-12, 0.6e-12),  # pJ/16-b
+                    mem_hier=(80e-12, 14e-12, 4e-12, 0),  # pj/16-b
                     noc_hop=40e-12,
                     idl_unit=200e-12)
+        #cost = cost(value_control=control_cost,
+        #            value_mult=mult_cost,
+        #            mac_op=2e-12,
+        #            mem_hier=(80e-12, 14e-12, 4e-12, 0.6e-12),  # pj/16-b
+        #            noc_hop=40e-12,
+        #            idl_unit=200e-12)
 
         options = Option(sw_gbuf_bypass=(True, True, True),
                          sw_solve_loopblocking=True,
