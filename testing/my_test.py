@@ -19,7 +19,7 @@ from nn_dataflow.nns import import_network
 from nn_dataflow.tools.nn_dataflow_search import *
 
 # value aware imports 
-from read_json import readValueMult8Cost
+from read_json import readValueMult8Cost, readValueControl8Cost
 
 class TestNNDataflow(unittest.TestCase):
     ''' Tests for NNDataflow module. '''
@@ -31,7 +31,9 @@ class TestNNDataflow(unittest.TestCase):
         self.map_strategy = MapStrategyEyeriss
         
         value_mult = {}
-        self.cost = Cost(value_mult = value_mult,
+        value_control = {}
+        self.cost = Cost(value_control = value_control,
+                         value_mult = value_mult,
                          mac_op=1,
                          mem_hier=(200, 6, 2, 1),
                          noc_hop=0,
@@ -70,9 +72,10 @@ class TestNNDataflow(unittest.TestCase):
                            )
 
         mult_cost = readValueMult8Cost()
-        print(mult_cost['multp_5'])
+        control_cost = readValueControl8Cost()
 
-        cost = Cost(value_mult=mult_cost,
+        cost = Cost(value_control=control_cost,
+                    value_mult=mult_cost,
                     mac_op=2e-12,
                     mem_hier=(80e-12, 14e-12, 4e-12, 0.6e-12),  # pJ/16-b
                     noc_hop=40e-12,

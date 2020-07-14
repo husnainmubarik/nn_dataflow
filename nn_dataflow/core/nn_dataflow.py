@@ -76,6 +76,7 @@ class NNDataflow():
         self.nndf_tops = {}
 
         # Default compare key function.
+        print('Hey testing {}'.format(self.cost.value_mult['multp_5']))
         self.cmp_key = lambda nndf: (nndf.total_cost, nndf.total_time)
 
     def schedule_search(self, options):
