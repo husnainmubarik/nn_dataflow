@@ -18,7 +18,8 @@ from collections import namedtuple
 
 from . import mem_hier_enum as me
 
-COST_LIST = ['mac_op',
+COST_LIST = ['value_mult',
+             'mac_op',
              'mem_hier',
              'noc_hop',
              'idl_unit',
@@ -35,6 +36,7 @@ class Cost(namedtuple('Cost', COST_LIST)):
 
         if hasattr(ntp.mac_op, '__len__'):
             raise TypeError('Cost: mac_op must be a scalar')
+        
         if not isinstance(ntp.mem_hier, tuple):
             raise TypeError('Cost: mem_hier must be a tuple')
         if len(ntp.mem_hier) != me.NUM:
