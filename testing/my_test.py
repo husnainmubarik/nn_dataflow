@@ -1,7 +1,10 @@
-
 import unittest
 import sys
 import pdb
+
+sys.path.append('/home/mubarik3/DASICS/mult_exploration/mult_synthesis')
+sys.path.append('../')
+
 from nn_dataflow.core import Cost
 from nn_dataflow.core import InputLayer, ConvLayer, FCLayer
 from nn_dataflow.core import MapStrategy, MapStrategyEyeriss
@@ -15,6 +18,9 @@ from nn_dataflow.core import Resource
 from nn_dataflow.nns import import_network
 from nn_dataflow.tools.nn_dataflow_search import *
 
+# value aware imports 
+from read_json import readValueMult8Cost
+
 class TestNNDataflow(unittest.TestCase):
     ''' Tests for NNDataflow module. '''
 
@@ -24,17 +30,15 @@ class TestNNDataflow(unittest.TestCase):
         
         self.map_strategy = MapStrategyEyeriss
         
-
-        self.cost = Cost(mac_op=1,
+        value_mult = {}
+        self.cost = Cost(value_mult = value_mult,
+                         mac_op=1,
                          mem_hier=(200, 6, 2, 1),
                          noc_hop=0,
                          idl_unit=0)
 
         self.options = Option()
         
-        print('mapping is  : {}'.format(self.map_strategy))
-        print('cost is: {}'.format(self.cost))
-        print('options are: {}'.format(self.options))
 
     def eyerissAsplos17(self):
         '''
@@ -65,7 +69,11 @@ class TestNNDataflow(unittest.TestCase):
                             no_time_mux=False,
                            )
 
-        cost = Cost(mac_op=2e-12,
+        mult_cost = readValueMult8Cost()
+        print(mult_cost['multp_5'])
+
+        cost = Cost(value_mult=mult_cost,
+                    mac_op=2e-12,
                     mem_hier=(80e-12, 14e-12, 4e-12, 0.6e-12),  # pJ/16-b
                     noc_hop=40e-12,
                     idl_unit=200e-12)
@@ -74,7 +82,7 @@ class TestNNDataflow(unittest.TestCase):
                          sw_solve_loopblocking=True,
                          partition_hybrid=True)
         
-        pdb.set_trace()
+        #pdb.set_trace()
 
         nnd = NNDataflow(network, batch_size, resource, cost,
                          self.map_strategy)
@@ -135,6 +143,4 @@ class TestNNDataflow(unittest.TestCase):
 if __name__ == '__main__':
   print('ran')
   obj = TestNNDataflow()
-  #obj.setUp()
-  #obj.eyerissIsca16()
   obj.eyerissAsplos17()
