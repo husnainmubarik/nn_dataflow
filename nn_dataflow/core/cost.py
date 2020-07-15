@@ -24,6 +24,7 @@ COST_LIST = ['value_control',
              'mem_hier',
              'noc_hop',
              'idl_unit',
+             'my_weights',
             ]
 
 class Cost(namedtuple('Cost', COST_LIST)):
@@ -50,6 +51,8 @@ class Cost(namedtuple('Cost', COST_LIST)):
             raise TypeError('Control cost must be dict')
         if not isinstance(ntp.value_mult, dict):
             raise TypeError('Mult cost must be dict')
+        if not isinstance(ntp.my_weights, dict):
+            raise TypeError('Weights must be dict')
         return ntp
 
     def mem_hier_at(self, mhe):

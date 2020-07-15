@@ -36,12 +36,14 @@ class TestNNDataflow(unittest.TestCase):
         
         value_mult = {}
         value_control = {}
+        my_weights = {}
         self.cost = Cost(value_control = value_control,
                          value_mult = value_mult,
                          mac_op=1,
                          mem_hier=(200, 6, 2, 1),
                          noc_hop=0,
-                         idl_unit=0)
+                         idl_unit=0,
+                         my_weights=my_weights)
 
         self.options = Option()
         
@@ -53,7 +55,7 @@ class TestNNDataflow(unittest.TestCase):
         #network = self.alex_net
         network = self.mock_net
 
-        batch_size = 16
+        batch_size = 1
 
 
         resource = Resource(proc_region=NodeRegion(origin=PhyDim2(0, 0),
@@ -78,10 +80,12 @@ class TestNNDataflow(unittest.TestCase):
 
         
         # model values
+        q_weight_dict = {}
         weights_dict = read_weights()
-        array = convertToArray(weights_dict, 'conv1')
-        array_qint8 = quantizeWeights(array, 'qint8')
-        
+        for w_layer in ['conv1']:
+          array = convertToArray(weights_dict, 'conv1')
+          array_qint8 = quantizeWeights(array, 'qint8')
+          q_weight_dict['conv1'] = array_qint8
         
         # hardware costs
         mult_cost = readValueMult8Cost()
@@ -89,10 +93,12 @@ class TestNNDataflow(unittest.TestCase):
         
         cost = Cost(value_control=control_cost,
                     value_mult=mult_cost,
-                    mac_op=2e-12,
+                    mac_op=1,
                     mem_hier=(80e-12, 14e-12, 4e-12, 0),  # pj/16-b
                     noc_hop=40e-12,
-                    idl_unit=200e-12)
+                    idl_unit=200e-12,
+                    my_weights=q_weight_dict)
+
         #cost = cost(value_control=control_cost,
         #            value_mult=mult_cost,
         #            mac_op=2e-12,

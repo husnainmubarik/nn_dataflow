@@ -14,6 +14,7 @@ You should have received a copy of the Modified BSD-3 License along with this
 program. If not, see <https://opensource.org/licenses/BSD-3-Clause>.
 """
 
+import sys
 from collections import OrderedDict, namedtuple
 import math
 import fastcache
@@ -283,6 +284,48 @@ class Scheduling():
 
         return lbs_tops
 
+    def value_pe_cost(self, lbs_ops):
+      #print('Hey testing len 
+      #        of weight is {}'.format(len(self.cost.my_weights['conv1'])))
+      #print('Hey testing ops are {}'.format(lbs_ops))
+      #sys.exit()
+      local_cost = 0
+      for i in range(int(lbs_ops)):
+        try:
+          wei = self.cost.my_weights['conv1'][i]
+        except IndexError:
+          wei = 100      #TODO: Some mock number (num_weights<ops)will fix 
+                         #index error later 
+                         #Clue: need to check lbs_ops calculations
+        if wei < 0:
+          key = 'multn_'+str(-1*wei)
+        else:
+          key = 'multp_'+str(wei)
+        #print(key)
+        local_cost += self.cost.value_mult[key]
+      return local_cost
+    
+    def value_control_cost(self, dram_accesses):
+      #print('Hey testing len 
+      #        of weight is {}'.format(len(self.cost.my_weights['conv1'])))
+      #print('Hey testing ops are {}'.format(lbs_ops))
+      #sys.exit()
+      local_cost = 0
+      for i in range(int(dram_accesses)):
+        try:
+          wei = self.cost.my_weights['conv1'][i]
+        except IndexError:
+          wei = 100      #TODO: Some mock number (num_weights<ops)will fix 
+                         #index error later 
+                         #Clue: need to check lbs_ops calculations
+        if wei < 0:
+          key = 'multn_'+str(-1*wei)
+        else:
+          key = 'multp_'+str(wei)
+        #print(key)
+        local_cost += self.cost.value_control[key]
+      return local_cost
+      
     def _get_result(self, lbs, part, ofmap_layout, sched_seq, unit_nhops):
         '''
         Make the schedule result from loop blocking and partitioning.
@@ -301,11 +344,15 @@ class Scheduling():
         total_nhops = [nnh + mnh for nnh, mnh in zip(node_nhops, mem_nhops)]
         cost_noc = self.cost.noc_hop * sum(total_nhops)
 
-        cost_op = self.cost.mac_op * lbs.ops
+        print('Hey testing loop ops are {}'.format(lbs.ops))
+        cost_control_unit = self.value_control_cost(lbs.dram_time) 
+        #TODO: change to dram access by considering BW 
+        #cost_op = self.cost.mac_op * lbs.ops
+        cost_op = self.value_pe_cost(lbs.ops)
 
         cost_static = self.cost.idl_unit * lbs.time
 
-        assert not math.isnan(cost_op + cost_access + cost_noc + cost_static)
+        assert not math.isnan(cost_op + cost_control_unit + cost_access + cost_noc + cost_static)
 
         # Overall stats.
         scheme['cost'] = cost_op + cost_access + cost_noc + cost_static

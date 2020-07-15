@@ -65,6 +65,8 @@ class NNDataflow():
                 layer2sched[layer] = sched
             self.layer_sched_dict[layer_name] = sched
 
+        print('printing sched')
+        print(dir(sched))
         # Inter-layer pipelining.
         self.ilp = InterLayerPipeline(self.network, self.batch_size,
                                       self.resource)
