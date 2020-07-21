@@ -16,6 +16,7 @@ program. If not, see <https://opensource.org/licenses/BSD-3-Clause>.
 
 '''
 Enum for data types.
+iChanged NUM from 3 to 2 as we don't need to access weight
 '''
 FIL = 0
 IFM = 1

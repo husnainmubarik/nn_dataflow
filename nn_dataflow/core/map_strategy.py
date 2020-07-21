@@ -41,6 +41,7 @@ class MapStrategy():
         self.batch_size = batch_size
         self.occupancy = occupancy
         self.dim_array = dim_array
+        #print('Hey testing occupancy is: {}'.format(occupancy))
 
     def utilization(self):
         '''
@@ -68,12 +69,23 @@ class MapStrategyEyeriss(MapStrategy):
         super(MapStrategyEyeriss, self).__init__(layer, batch_size, occupancy,
                                                  dim_array)
 
+        #print('Hey testing MappingStrategi init')
         # Logic PE set.
         if isinstance(self.layer, ConvLayer):
             # Conv and FC layers.
             self.ops_lpe = self.layer.wfil * self.layer.wofm
             self.dim_lpeset = PhyDim2(self.layer.hfil, self.layer.hofm)
             cnt_lpeset = self.batch_size * self.layer.nofm * self.layer.nifm
+            
+            print('''Hey testing wfil: {}, wofm: {}'''.format(self.layer.wfil,
+                                                              self.layer.wofm)) 
+            
+            print('''Hey testing ops_lpe: {}, dim_lpeset: {}, cnt_lpset: {},\\ 
+                      numops should be: {}'''.format(self.ops_lpe,
+                                                     self.dim_lpeset,
+                                                     cnt_lpeset,
+                                                     self.ops_lpe \
+                                                     * cnt_lpeset))
         elif isinstance(self.layer, LocalRegionLayer):
             self.ops_lpe = self.layer.nreg * self.layer.wreg * self.layer.wofm
             self.dim_lpeset = PhyDim2(h=self.layer.hreg, w=self.layer.hofm)
@@ -175,16 +187,20 @@ class MapStrategyEyeriss(MapStrategy):
                 sz_gbuf_unitpass, sz_regf_unitpass, amp_acc_ifm = \
                 self._calc_unitpass()
 
+        #print('Hey testing unitpass ops: {}'.format(ops_unitpass))
+        #print('Hey testing map_strategy self is: {}'.format(dir(self)))
+        #print('Hey testing map_strategy self.layer is: {}'.format(self.layer))
         data_loops = self.layer.data_loops()
 
         # Apply replication.
         for lcnt, locc, rsz, rcnt in self._gen_repl():
-
+            #print('''Hey testing loop in gen_nested_dsc: 
+            #        {}, {}, {}, {}'''.format(lcnt, locc, rsz, rcnt))
             # Number of ops.
             # Replicate to procpass. Also consider external occupancy and loop
             # occupancies.
             unit_ops = ops_unitpass * rsz * self.occupancy * util.prod(locc)
-
+            #print('Hey testing ops_unit_pass are: {}'.format(ops_unitpass))
             # Time does not change with replication, and is not affected by
             # loop occupancy.
             unit_time = time_unitpass
@@ -357,7 +373,12 @@ class MapStrategyEyeriss(MapStrategy):
                 strd=(self.layer.htrd, self.layer.wtrd))
 
             ops = acclayer.total_ops()
-
+            #print('Hey testing ops in calc_unitpass: {}'.format(ops))
+            #print('''Hey testing filter_size in calc_unitpass: {}'''
+            #      .format(acclayer.filter_size()))
+            #print('''Hey testing total_filter_size in calc_unitpass: {}'''
+            #      .format(acclayer.total_filter_size()))
+            
             time = flpesets_per_unitpass * self.ops_lpe
 
             # Data are accessed once from DRAM into gbuf.
@@ -387,9 +408,13 @@ class MapStrategyEyeriss(MapStrategy):
             access[me.ITCN][de.OFM] = acclayer.wofm * self.dim_flpeset.size() \
                     * flpesets_per_unitpass
 
+            #print('Hey testing itcn for filter accessed: {}'
+            #       .format(access[me.ITCN][de.FIL]))
+            #print('Hey testing acclayer wfill is {}'.format(acclayer.wfil))
             # regf access is based on num of ops.
             access[me.REGF] = [ops] * de.NUM
-
+            #print('Hey testing regf is {}'.format(me.REGF))
+            #print('Hey testing access regf is {}'.format(access[me.REGF]))
             sz_gbuf[de.FIL] = buflayer.total_filter_size()
             sz_gbuf[de.IFM] = buflayer.total_ifmap_size()
             sz_gbuf[de.OFM] = buflayer.total_ofmap_size()

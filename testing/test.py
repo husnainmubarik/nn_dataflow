@@ -1,3 +1,4 @@
+
 import unittest
 import sys
 import pdb
@@ -30,10 +31,10 @@ class TestNNDataflow(unittest.TestCase):
     def __init__(self):
 
         self.alex_net = import_network('alex_net')
-        self.mock_net = import_network('mock_net')
         
         self.map_strategy = MapStrategyEyeriss
         
+
         value_mult = {}
         value_control = {}
         my_weights = {}
@@ -47,15 +48,17 @@ class TestNNDataflow(unittest.TestCase):
 
         self.options = Option()
         
+        print('mapping is  : {}'.format(self.map_strategy))
+        print('cost is: {}'.format(self.cost))
+        print('options are: {}'.format(self.options))
 
     def eyerissAsplos17(self):
         '''
         Reproduce TETRIS ASPLOS'17 paper Figure 8.
         '''
-        #network = self.alex_net
-        network = self.mock_net
+        network = self.alex_net
 
-        batch_size = 1
+        batch_size = 16
 
 
         resource = Resource(proc_region=NodeRegion(origin=PhyDim2(0, 0),
@@ -78,39 +81,16 @@ class TestNNDataflow(unittest.TestCase):
                             no_time_mux=False,
                            )
 
-        
-        # model values
-        q_weight_dict = {}
-        weights_dict = read_weights()
-        for w_layer in ['conv1']:
-          array = convertToArray(weights_dict, 'conv1')
-          array_qint8 = quantizeWeights(array, 'qint8')
-          q_weight_dict['conv1'] = array_qint8
-        print('''Hey num weights in conv1 are {} '''.format(len(array_qint8)))
-        # hardware costs
-        mult_cost = readValueMult8Cost()
-        control_cost = readValueControl8Cost()
-        
-        cost = Cost(value_control=control_cost,
-                    value_mult=mult_cost,
-                    mac_op=2e-12,
-                    mem_hier=(80e-12, 14e-12, 4e-12, 0.6e-12),  # pj/16-b
+        cost = Cost(mac_op=2e-12,
+                    mem_hier=(80e-12, 14e-12, 4e-12, 0.6e-12),  # pJ/16-b
                     noc_hop=40e-12,
-                    idl_unit=200e-12,
-                    my_weights=q_weight_dict)
-
-        #cost = cost(value_control=control_cost,
-        #            value_mult=mult_cost,
-        #            mac_op=2e-12,
-        #            mem_hier=(80e-12, 14e-12, 4e-12, 0.6e-12),  # pj/16-b
-        #            noc_hop=40e-12,
-        #            idl_unit=200e-12)
+                    idl_unit=200e-12)
 
         options = Option(sw_gbuf_bypass=(True, True, True),
                          sw_solve_loopblocking=True,
                          partition_hybrid=True)
         
-        #pdb.set_trace()
+        pdb.set_trace()
 
         nnd = NNDataflow(network, batch_size, resource, cost,
                          self.map_strategy)
@@ -171,4 +151,6 @@ class TestNNDataflow(unittest.TestCase):
 if __name__ == '__main__':
   print('ran')
   obj = TestNNDataflow()
+  #obj.setUp()
+  #obj.eyerissIsca16()
   obj.eyerissAsplos17()

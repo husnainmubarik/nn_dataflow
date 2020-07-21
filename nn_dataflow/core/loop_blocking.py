@@ -161,6 +161,7 @@ def gen_loopblocking(nested_loop_desc, resource, part, constraint, cost,
         gen = loop_blocking_solver.gen_loopblocking_gbuf_reside
 
         for bl_ts, bl_ords in gen(nested_loop_desc, resource, options):
+            #print('Hey testing nested loop desc {}'.format(nested_loop_desc))
             lbs = LoopBlockingScheme(nested_loop_desc, bl_ts, bl_ords,
                                      resource, bufshr, options)
             if constraint.is_valid_top_bl(lbs.bl_ts[0], lbs.bl_ords[0]):

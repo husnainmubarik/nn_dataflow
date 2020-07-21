@@ -167,6 +167,8 @@ class Scheduling():
         '''
         Search the best scheduling results.
         '''
+        #print('''Hey testing schedule_search is called''')
+        
         # Set key function.
         if options.opt_goal == 'ed':
             self.cmp_key = lambda res: res.total_cost * res.total_time
@@ -179,7 +181,7 @@ class Scheduling():
 
         resource = condition.resource
         proc_region = resource.proc_region
-
+        
         # Ifmap layout.
         ifmap_layout = condition.ifmap_layout
         # Ifmap should be from the source data region or local.
@@ -196,14 +198,19 @@ class Scheduling():
 
         # Filter nodes. All memory nodes can store filters. Deduplicate.
         filter_nodes = frozenset(resource.dram_region.iter_node())
-
+        #print('''Hey testing filter nodes are: {}'''.format(filter_nodes))
+        
         # Explore parallel partitioning schemes.
         for part in partition.gen_partition(self.layer, self.batch_size,
                                             proc_region.dim, options,
                                             guaranteed=True):
+            #print('''Hey testing part is {}'''.format(part))
+            
             # Explore single-node schedules.
             lbs_tops = list(self.schedule_search_per_node(
                 part, resource, condition.constraint, options))
+            #for l in lbs_tops:
+            #  print('''Hey testing lbs_tops are: {}'''.format(l))
             if not lbs_tops:
                 continue
 
@@ -261,6 +268,7 @@ class Scheduling():
         single node after partitioning. Return the top LoopBlockingScheme
         instances.
         '''
+        #print('Hey testing scheduling_search_per_node is called')
         lbs_tops = []
 
         # Partitioned layer.
@@ -330,6 +338,7 @@ class Scheduling():
         '''
         Make the schedule result from loop blocking and partitioning.
         '''
+        #print('Hey testing get result is called')
         scheme = OrderedDict()
 
         # Cost components.
@@ -344,11 +353,12 @@ class Scheduling():
         total_nhops = [nnh + mnh for nnh, mnh in zip(node_nhops, mem_nhops)]
         cost_noc = self.cost.noc_hop * sum(total_nhops)
 
-        print('Hey testing loop ops are {}'.format(lbs.ops))
-        cost_control_unit = self.value_control_cost(lbs.dram_time) 
+        #print('Hey testing loop ops are {}'.format(lbs.ops))
+        #cost_control_unit = self.value_control_cost(lbs.dram_time) 
+        cost_control_unit = 5
         #TODO: change to dram access by considering BW 
-        #cost_op = self.cost.mac_op * lbs.ops
-        cost_op = self.value_pe_cost(lbs.ops)
+        cost_op = self.cost.mac_op * lbs.ops
+        #cost_op = self.value_pe_cost(lbs.ops)
 
         cost_static = self.cost.idl_unit * lbs.time
 

@@ -75,7 +75,7 @@ class LoopBlockingScheme():
         `bufshr` is a BufShrScheme instance, indicating the buffer sharing
         scheme.
         '''
-
+        #print('Hey testing loop blocking scheme was initialized')
         # pylint: disable=invalid-name
         BL = self.BL
 
@@ -468,6 +468,10 @@ class LoopBlockingScheme():
         '''
 
         self.ops = self.nld.unit_ops * self.lcnt * self.num_nodes
+        #print('''Hey testing self unit_ops are: {}, lcnt is {}, num_nodes: {},
+        #         ops: {}'''.format(self.nld.unit_ops, self.lcnt, self.num_nodes, 
+        #                           self.ops))
+        
         self.proc_time = self.nld.unit_time * self.lcnt
 
         self.access[me.REGF] = [v * self.lcnt * t * self.num_nodes

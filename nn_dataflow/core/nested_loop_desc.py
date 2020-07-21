@@ -87,6 +87,7 @@ class NestedLoopDesc(namedtuple('NestedLoopDesc', NESTED_LOOP_DESC_LIST)):
         '''
         Get the occupied gbuf size by data category `dce` for one loop body.
         '''
+        #print('Hey testing dce in usize_gbuf_of: {}'.format(dce))
         return self.usize_gbuf[dce]
 
     def usize_regf_of(self, dce):

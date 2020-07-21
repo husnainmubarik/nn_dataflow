@@ -65,8 +65,8 @@ class NNDataflow():
                 layer2sched[layer] = sched
             self.layer_sched_dict[layer_name] = sched
 
-        print('printing sched')
-        print(dir(sched))
+        #print('printing sched')
+        #print(dir(sched))
         # Inter-layer pipelining.
         self.ilp = InterLayerPipeline(self.network, self.batch_size,
                                       self.resource)
@@ -78,7 +78,7 @@ class NNDataflow():
         self.nndf_tops = {}
 
         # Default compare key function.
-        print('Hey testing {}'.format(self.cost.value_mult['multp_5']))
+        #print('Hey testing {}'.format(self.cost.value_mult['multp_5']))
         self.cmp_key = lambda nndf: (nndf.total_cost, nndf.total_time)
 
     def schedule_search(self, options):
@@ -98,6 +98,7 @@ class NNDataflow():
         for seg in self.ilp.gen_segment(options):
             if seg not in segments[seg[-1][-1]]:
                 segments[seg[-1][-1]].append(seg)
+        #print('Hey testing segments are {}'.format(segments))
 
         # Clear and reset.
         self.nndf_tops = {}
@@ -120,11 +121,15 @@ class NNDataflow():
             # The segments ended with the current layer. Use them to extend the
             # current top schemes.
             for seg in segments[layer_name]:
+                #print('''Hey testing seg is {}'''.format(seg))
                 if options.verbose:
                     sys.stderr.write('  - {}\n'.format(seg.seg))
                     sys.stderr.flush()
                 tops += self._segment_schedule_search(seg, options)
 
+            #print('''Hey testing from sched tops ops are {} keeping ntops {}'''
+            #      .format(tops[0].total_ops,options.ntops))
+            
             # Always pick and keep top n.
             tops = sorted(tops, key=self.cmp_key)[:options.ntops]
 
@@ -132,8 +137,16 @@ class NNDataflow():
             assert layer_name not in self.nndf_tops
             self.nndf_tops[layer_name] = tops
 
+        #print('''Hey testing from sched nndf_tops before final get is {}'''
+        #      .format(self.nndf_tops['conv1_a'][0].total_ops)) 
+        
+        
         # Final top schemes.
         nndf_tops = self.nndf_tops.get(self.ordered_layer_list[-1], [])
+        
+        #print('''Hey testing from sched nndf_tops after final get is {}'''
+        #      .format(nndf_tops)) 
+        
         if not nndf_tops:
             sys.stderr.write('No valid schedule found for {}.\n'
                              .format(self.network.net_name))
@@ -151,7 +164,11 @@ class NNDataflow():
             h, m = sched.cache_stats()
             cache_hits += h
             cache_misses += m
-
+        
+        #print('''Hey testing from sched search total ops are {} alu cost should 
+        #       be {} pJ'''.format(nndf_tops[0].total_ops, 
+        #                       nndf_tops[0].total_ops*2e-12))
+        
         return nndf_tops, (cache_hits, cache_misses)
 
     def _segment_schedule_search(self, segment, options):
@@ -164,6 +181,10 @@ class NNDataflow():
         # We take the top schemes that end with the latest previous layer as
         # the initial state.
         first_layer_idx = self.ordered_layer_list.index(segment[0][0])
+        
+        #print('''Hey testing segment_sched first layer idx is {}'''
+        #      .format(first_layer_idx)) 
+        
         if first_layer_idx == 0:
             prev_nndf_tops = self.nndf_tops[None]
         else:
@@ -174,26 +195,35 @@ class NNDataflow():
 
         # New top schemes.
         nndf_tops = []
+        
+        #print('''Hey testing segment_sched segment is {}'''
+        #      .format(segment)) 
+        #print('''Hey testing segment_sched allocation is {}'''
+        #      .format(segment.allocation())) 
 
         # Allocation.
         allocation = segment.allocation()
 
         # Forwarding data regions. Map a spatial index to the forwarding region.
         fwd_data_region_dict = {}
+        #print('''Hey testing ifm_fwd_dict {}'''
+        #      .format(segment.ifm_fwd_dict.values())) 
         for sh_list in segment.ifm_fwd_dict.values():
             # A list of spatial indices that share the same ifmaps.
             r = allocation[sh_list[0].sp_idx][sh_list[0].tm_idx].proc_region
+            #print('Hey testing share ifmaps: {}'.format(r))
             for idx in sh_list[1:]:
                 fwd_data_region_dict[idx] = r
         for fwd_src, fwd_dst_list in segment.ofm_fwd_dict.items():
             # Ofmaps forwarded to neighbors.
             r = allocation[fwd_src.sp_idx][fwd_src.tm_idx].proc_region
+            #print('Hey testing forward ofmaps: {}'.format(r))
             for idx in fwd_dst_list:
                 fwd_data_region_dict[idx] = r
 
         # Max allowed time overhead for segment timing.
         max_time_ovhd = options.layer_pipeline_time_ovhd
-
+        #print('''Hey testing max allowed ove time {}'''.format(max_time_ovhd))
         # Cost hint Pareto-optimal frontier.
         frontier = set()
 
@@ -212,6 +242,8 @@ class NNDataflow():
             for sp_idx, (ltpl, rtpl, ctpl) \
                     in enumerate(zip(segment, allocation, constraint)):
 
+                #print('''Hey testing sp_idx: {}, ltpl: {}, rtpl: {}, ctpl: {}'''
+                #      .format(sp_idx,ltpl,rtpl,ctpl))
                 # Temporal scheduling.
                 for tm_idx, (layer, resource, cstr) \
                         in enumerate(zip(ltpl, rtpl, ctpl)):
@@ -252,11 +284,12 @@ class NNDataflow():
         nndf_tops = []
 
         layer_sched = self.layer_sched_dict[layer_name]
-
+        #print('''Hey testing layer sched is {}'''.format(layer_sched))
         for prev_nndf in prev_nndf_tops:
 
             ifmap_layout = prev_nndf.fmap_layout(self.network.prevs(layer_name))
-
+            #print('''Hey testing ifmaps layout is {}'''.format(ifmap_layout))
+            #print('''Hey testing prev_nndf is {}'''.format(prev_nndf.total_ops))
             if fwd_data_region is not None:
                 # Remap source data regions to the forwarding region.
                 ifmap_layout = DataLayout(
@@ -280,6 +313,7 @@ class NNDataflow():
                                             sched_seq=sched_seq)
 
             try:
+                #print('''Hey testing conditions are: {}'''.format(condition))
                 sched_tops = layer_sched.schedule_search(condition, options)
             except Exception:
                 sys.stderr.write('Failed when scheduling layer {}.\n'
@@ -288,9 +322,11 @@ class NNDataflow():
 
             # Append all the current layer top schedules to all the previous top
             # schedules with the matching fmap layout.
+            #print('''Hey testing sched_tops is: {}'''.format(sched_tops))
             for t in sched_tops:
                 nndf = prev_nndf.copy()
                 nndf[layer_name] = t
+                #print('''Hey testing t is: {}'''.format(t))
                 nndf_tops.append(nndf)
 
         # Always pick and keep top n at each layer.

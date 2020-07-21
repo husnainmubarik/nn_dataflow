@@ -124,6 +124,8 @@ class Layer(util.ContentHashClass):
 
     def total_ops(self, batch_size=1):
         ''' Get total number of operations. '''
+        #print('''Hey testing ofmap_size:{}, ops_per_neuron: {}'''
+        #      .format(self.total_ofmap_size(), self.ops_per_neuron()))
         return self.total_ofmap_size() * self.ops_per_neuron() * batch_size
 
     def is_valid_padding_sifm(self, sifm):
