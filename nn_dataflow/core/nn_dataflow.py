@@ -28,6 +28,10 @@ from .nn_dataflow_scheme import NNDataflowScheme
 from .resource import Resource
 from .scheduling import SchedulingCondition, Scheduling
 
+# Value specific development
+from .cal_value_cost import ValueCost
+#from .cal_value_cost import value_control_cost
+
 class NNDataflow():
     '''
     Search optimized dataflows for neural networks.
@@ -64,9 +68,13 @@ class NNDataflow():
                                    self.map_strategy)
                 layer2sched[layer] = sched
             self.layer_sched_dict[layer_name] = sched
-
-        #print('printing sched')
-        #print(dir(sched))
+        
+        # value specific additions 
+        for layer_name in self.network:
+          layer =self.network[layer_name]
+          value_cost = ValueCost(layer, self.cost, self.batch_size)
+          value_cost.value_logic_cost()
+        
         # Inter-layer pipelining.
         self.ilp = InterLayerPipeline(self.network, self.batch_size,
                                       self.resource)
@@ -120,6 +128,7 @@ class NNDataflow():
 
             # The segments ended with the current layer. Use them to extend the
             # current top schemes.
+            #import pdb; pdb.set_trace()
             for seg in segments[layer_name]:
                 #print('''Hey testing seg is {}'''.format(seg))
                 if options.verbose:

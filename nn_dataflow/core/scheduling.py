@@ -33,6 +33,8 @@ from .map_strategy import MapStrategy
 from .resource import Resource
 from .scheduling_constraint import SchedulingConstraint
 
+
+
 class SchedulingCondition(namedtuple('SchedulingCondition',
                                      ['resource',
                                       'constraint',
@@ -281,7 +283,8 @@ class Scheduling():
 
         # Explore PE array mapping schemes for partitioned layer.
         for nested_loop_desc in map_strategy.gen_nested_loop_desc():
-
+            #print('''Hey testing dram weight access in sch_search_per_node: {}'''
+            #         .format(nested_loop_desc.total_access_at_of(me.DRAM,de.FIL)))
             # Explore loop blocking schemes.
             for lbs in loop_blocking.gen_loopblocking(
                     nested_loop_desc, resource, part, constraint, self.cost,
@@ -290,6 +293,9 @@ class Scheduling():
                 if lbs.is_valid():
                     lbs_tops.append(lbs)
 
+        #print('Hey testing: layer: {}'.format(self.layer))
+        #print('Hey testing: p_layer: {}'.format(p_layer))
+        #value_logic_cost(p_layer, cost, )
         return lbs_tops
 
     def value_pe_cost(self, lbs_ops):
