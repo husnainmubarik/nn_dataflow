@@ -33,7 +33,9 @@ from .map_strategy import MapStrategy
 from .resource import Resource
 from .scheduling_constraint import SchedulingConstraint
 
-
+# Value changes 
+from .layer import Layer, ConvLayer, LocalRegionLayer
+from .cal_value_cost import ValueCost
 
 class SchedulingCondition(namedtuple('SchedulingCondition',
                                      ['resource',
@@ -169,8 +171,6 @@ class Scheduling():
         '''
         Search the best scheduling results.
         '''
-        #print('''Hey testing schedule_search is called''')
-        
         # Set key function.
         if options.opt_goal == 'ed':
             self.cmp_key = lambda res: res.total_cost * res.total_time
@@ -183,7 +183,6 @@ class Scheduling():
 
         resource = condition.resource
         proc_region = resource.proc_region
-        
         # Ifmap layout.
         ifmap_layout = condition.ifmap_layout
         # Ifmap should be from the source data region or local.
@@ -200,19 +199,23 @@ class Scheduling():
 
         # Filter nodes. All memory nodes can store filters. Deduplicate.
         filter_nodes = frozenset(resource.dram_region.iter_node())
-        #print('''Hey testing filter nodes are: {}'''.format(filter_nodes))
-        
         # Explore parallel partitioning schemes.
         for part in partition.gen_partition(self.layer, self.batch_size,
                                             proc_region.dim, options,
                                             guaranteed=True):
-            #print('''Hey testing part is {}'''.format(part))
-            
             # Explore single-node schedules.
-            lbs_tops = list(self.schedule_search_per_node(
-                part, resource, condition.constraint, options))
-            #for l in lbs_tops:
-            #  print('''Hey testing lbs_tops are: {}'''.format(l))
+            # value specific changes
+            lbs_tops_temp = self.schedule_search_per_node(
+                part, resource, condition.constraint, options)
+            if lbs_tops_temp == None:
+              #print('Hey testing none was received')
+              continue
+            lbs_tops = list(lbs_tops_temp)
+            
+            # value specific changes end remove lbs_tops from comments 
+            #lbs_tops = list(self.schedule_search_per_node(
+            #    part, resource, condition.constraint, options))
+            
             if not lbs_tops:
                 continue
 
@@ -232,11 +235,17 @@ class Scheduling():
                 self.layer, self.batch_size, proc_region, part,
                 filter_nodes, ifmap_layout, ofmap_layout, options)
 
+            #TODO: verify following changes 
+            for lbs in lbs_tops:
+              tops += [self._get_result(lbs, part, ofmap_layout,
+                                        condition.sched_seq, unit_nhops)]
+              break
+            
             # Make scheduling result.
-            tops += [self._get_result(lbs, part, ofmap_layout,
-                                      condition.sched_seq, unit_nhops)
-                     for lbs in lbs_tops]
-
+            #tops += [self._get_result(lbs, part, ofmap_layout,
+            #                          condition.sched_seq, unit_nhops)
+            #         for lbs in lbs_tops]
+            #break
         # Pick the top n.
         tops = sorted(tops, key=self.cmp_key)[:options.ntops]
 
@@ -276,15 +285,20 @@ class Scheduling():
         # Partitioned layer.
         p_layer, p_batch_size, p_occ = part.part_layer(self.layer,
                                                        self.batch_size)
+        if isinstance(self.layer, ConvLayer):
+          if p_layer.wfil != self.layer.wfil or p_layer.wofm != self.layer.wofm \
+             or p_layer.hfil != self.layer.hfil \
+             or p_layer.hofm != self.layer.hofm:
+            return None
 
+        
         # Mapping strategy.
         map_strategy = self.map_strategy_class(p_layer, p_batch_size, p_occ,
                                                resource.dim_array)
 
         # Explore PE array mapping schemes for partitioned layer.
         for nested_loop_desc in map_strategy.gen_nested_loop_desc():
-            #print('''Hey testing dram weight access in sch_search_per_node: {}'''
-            #         .format(nested_loop_desc.total_access_at_of(me.DRAM,de.FIL)))
+
             # Explore loop blocking schemes.
             for lbs in loop_blocking.gen_loopblocking(
                     nested_loop_desc, resource, part, constraint, self.cost,
@@ -293,58 +307,12 @@ class Scheduling():
                 if lbs.is_valid():
                     lbs_tops.append(lbs)
 
-        #print('Hey testing: layer: {}'.format(self.layer))
-        #print('Hey testing: p_layer: {}'.format(p_layer))
-        #value_logic_cost(p_layer, cost, )
         return lbs_tops
 
-    def value_pe_cost(self, lbs_ops):
-      #print('Hey testing len 
-      #        of weight is {}'.format(len(self.cost.my_weights['conv1'])))
-      #print('Hey testing ops are {}'.format(lbs_ops))
-      #sys.exit()
-      local_cost = 0
-      for i in range(int(lbs_ops)):
-        try:
-          wei = self.cost.my_weights['conv1'][i]
-        except IndexError:
-          wei = 100      #TODO: Some mock number (num_weights<ops)will fix 
-                         #index error later 
-                         #Clue: need to check lbs_ops calculations
-        if wei < 0:
-          key = 'multn_'+str(-1*wei)
-        else:
-          key = 'multp_'+str(wei)
-        #print(key)
-        local_cost += self.cost.value_mult[key]
-      return local_cost
-    
-    def value_control_cost(self, dram_accesses):
-      #print('Hey testing len 
-      #        of weight is {}'.format(len(self.cost.my_weights['conv1'])))
-      #print('Hey testing ops are {}'.format(lbs_ops))
-      #sys.exit()
-      local_cost = 0
-      for i in range(int(dram_accesses)):
-        try:
-          wei = self.cost.my_weights['conv1'][i]
-        except IndexError:
-          wei = 100      #TODO: Some mock number (num_weights<ops)will fix 
-                         #index error later 
-                         #Clue: need to check lbs_ops calculations
-        if wei < 0:
-          key = 'multn_'+str(-1*wei)
-        else:
-          key = 'multp_'+str(wei)
-        #print(key)
-        local_cost += self.cost.value_control[key]
-      return local_cost
-      
     def _get_result(self, lbs, part, ofmap_layout, sched_seq, unit_nhops):
         '''
         Make the schedule result from loop blocking and partitioning.
         '''
-        #print('Hey testing get result is called')
         scheme = OrderedDict()
 
         # Cost components.
@@ -359,17 +327,18 @@ class Scheduling():
         total_nhops = [nnh + mnh for nnh, mnh in zip(node_nhops, mem_nhops)]
         cost_noc = self.cost.noc_hop * sum(total_nhops)
 
-        #print('Hey testing loop ops are {}'.format(lbs.ops))
-        #cost_control_unit = self.value_control_cost(lbs.dram_time) 
-        cost_control_unit = 5
-        #TODO: change to dram access by considering BW 
         cost_op = self.cost.mac_op * lbs.ops
-        #cost_op = self.value_pe_cost(lbs.ops)
 
         cost_static = self.cost.idl_unit * lbs.time
 
-        assert not math.isnan(cost_op + cost_control_unit + cost_access + cost_noc + cost_static)
+        assert not math.isnan(cost_op + cost_access + cost_noc + cost_static)
 
+        value_cost_obj = ValueCost(lbs, self.layer, self.cost, self.batch_size)
+        value_cost_obj.value_gbuf_cost() 
+        #value_cost_obj.value_logic_cost() 
+        value_cost_obj.value_control_logic_cost() 
+        value_cost_obj.value_control_regf_cost() 
+        value_cost_obj.value_adder_cost() 
         # Overall stats.
         scheme['cost'] = cost_op + cost_access + cost_noc + cost_static
         scheme['time'] = lbs.time

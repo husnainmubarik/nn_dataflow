@@ -1,10 +1,20 @@
 ran
 num weights = 34944
 Hey num weights in conv1 are 34944 
-Hey testing: layer is ConvLayer(nifm=3, nofm=48, sofm=(55, 55), sfil=(11, 11), strd=(4, 4))
-Hey testing value mult cost is: 6.781781204574585e-12
+Hey testing MappingStrategi init
+Hey testing wfil(R): 11, wofm(E): 55, hfil: 11, hofm: 55, hifm: 227
+Hey testing ops_logic_total: 3294225
+Hey testing before break loop
+Hey testing filters accessed from dram in get result: 1089.0, regf: 823556.25, 
+                gbuf: 1089.0
+Hey unitpass ops are: 91506.25
+ops are: 52707600.0
+dram ifm: 168888.0
+Hey testing value mult cost is: 4.462269823291414e-08
 t16 ops: 52707600.0
-t16_time: 22176
-t16_energy: 0.00031126728
+t16_time: 21780
+t16_energy: 0.000739235328
 conv1_a,
-[0.1054152, 0.04958592, 0.0, 0.02409792, 0.12649824]
+Hey testing layer part is: conv1_a
+Hey testing my test total_ops are: 52707600.0
+[0.1054152, 0.22779263999999996, 0.0, 0.034328448, 0.12649824]

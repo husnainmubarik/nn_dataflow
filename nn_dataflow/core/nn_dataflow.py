@@ -28,10 +28,6 @@ from .nn_dataflow_scheme import NNDataflowScheme
 from .resource import Resource
 from .scheduling import SchedulingCondition, Scheduling
 
-# Value specific development
-from .cal_value_cost import ValueCost
-#from .cal_value_cost import value_control_cost
-
 class NNDataflow():
     '''
     Search optimized dataflows for neural networks.
@@ -68,18 +64,13 @@ class NNDataflow():
                                    self.map_strategy)
                 layer2sched[layer] = sched
             self.layer_sched_dict[layer_name] = sched
-        
-        # value specific additions 
-        for layer_name in self.network:
-          layer =self.network[layer_name]
-          value_cost = ValueCost(layer, self.cost, self.batch_size)
-          value_cost.value_logic_cost()
-        
+
         # Inter-layer pipelining.
         self.ilp = InterLayerPipeline(self.network, self.batch_size,
                                       self.resource)
         self.ordered_layer_list = self.ilp.ordered_layer_list()
 
+        
         # NNDataflowScheme tops.
         # The top schemes are organized by the ending layers, and keeping
         # extended to the end of the network.
@@ -130,7 +121,6 @@ class NNDataflow():
             # current top schemes.
             #import pdb; pdb.set_trace()
             for seg in segments[layer_name]:
-                #print('''Hey testing seg is {}'''.format(seg))
                 if options.verbose:
                     sys.stderr.write('  - {}\n'.format(seg.seg))
                     sys.stderr.flush()
@@ -178,6 +168,8 @@ class NNDataflow():
         #       be {} pJ'''.format(nndf_tops[0].total_ops, 
         #                       nndf_tops[0].total_ops*2e-12))
         
+        #print('''Hey testing tops has dir: {}'''
+        #         .format(nndf_tops[0].total_accesses[me.DRAM][de.FIL]))
         return nndf_tops, (cache_hits, cache_misses)
 
     def _segment_schedule_search(self, segment, options):
@@ -293,12 +285,9 @@ class NNDataflow():
         nndf_tops = []
 
         layer_sched = self.layer_sched_dict[layer_name]
-        #print('''Hey testing layer sched is {}'''.format(layer_sched))
         for prev_nndf in prev_nndf_tops:
-
             ifmap_layout = prev_nndf.fmap_layout(self.network.prevs(layer_name))
             #print('''Hey testing ifmaps layout is {}'''.format(ifmap_layout))
-            #print('''Hey testing prev_nndf is {}'''.format(prev_nndf.total_ops))
             if fwd_data_region is not None:
                 # Remap source data regions to the forwarding region.
                 ifmap_layout = DataLayout(
@@ -338,6 +327,8 @@ class NNDataflow():
                 #print('''Hey testing t is: {}'''.format(t))
                 nndf_tops.append(nndf)
 
+            #TODO: fix it later
+            return sorted(nndf_tops, key=self.cmp_key)[:options.ntops]
         # Always pick and keep top n at each layer.
         return sorted(nndf_tops, key=self.cmp_key)[:options.ntops]
 

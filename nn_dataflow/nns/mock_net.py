@@ -31,3 +31,11 @@ NN.set_input_layer(InputLayer(3, 224))
 
 NN.add('conv1_a', ConvLayer(3, 48, 55, 11, 4), prevs=(NN.INPUT_LAYER_KEY,))
 #NN.add('conv1_b', ConvLayer(3, 48, 55, 11, 4), prevs=(NN.INPUT_LAYER_KEY,))
+#NN.add('pool1_a', PoolingLayer(48, 27, 3, strd=2), prevs=('conv1_a',))
+#NN.add('pool1_b', PoolingLayer(48, 27, 3, strd=2), prevs=('conv1_b',))
+# Norm layer is ignored.
+
+#NN.add('conv2_a', ConvLayer(48, 128, 27, 5), prevs=('pool1_a',))
+#NN.add('conv2_b', ConvLayer(48, 128, 27, 5), prevs=('pool1_b',))
+#NN.add('pool2_a', PoolingLayer(128, 13, 3, strd=2), prevs=('conv2_a',))
+#NN.add('pool2_b', PoolingLayer(128, 13, 3, strd=2), prevs=('conv2_b',))

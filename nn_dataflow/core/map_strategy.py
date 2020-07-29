@@ -73,7 +73,7 @@ class MapStrategyEyeriss(MapStrategy):
         super(MapStrategyEyeriss, self).__init__(layer, batch_size, occupancy,
                                                  dim_array)
 
-        #print('Hey testing MappingStrategi init')
+        print('Hey testing MappingStrategi init')
         # Logic PE set.
         if isinstance(self.layer, ConvLayer):
             # Conv and FC layers.
@@ -81,12 +81,14 @@ class MapStrategyEyeriss(MapStrategy):
             self.dim_lpeset = PhyDim2(self.layer.hfil, self.layer.hofm)
             cnt_lpeset = self.batch_size * self.layer.nofm * self.layer.nifm
             
-            #print('''Hey testing wfil(R): {}, wofm(E): {}, hfil: {}, hofm: {}'''
-            #         .format(self.layer.wfil,
-            #                self.layer.wofm, 
-            #                self.layer.hfil, 
-            #                self.layer.hofm)) 
-            #
+            print('''Hey testing wfil(R): {}, wofm(E): {}, hfil: {}, hofm: {}, hifm: {}'''
+                     .format(self.layer.wfil,
+                            self.layer.wofm, 
+                            self.layer.hfil, 
+                            self.layer.hofm,
+                            self.layer.hifm
+                            )) 
+            
             #print('''Hey testing ops_lpe(num_pes in a set): {}, dim_lpeset: {}, 
             #         cnt_lpset(sets_needed): {}, 
             #         numops should be: {}'''.format(self.ops_lpe,
@@ -105,7 +107,7 @@ class MapStrategyEyeriss(MapStrategy):
                             .format(type(self.layer)))
 
         ops_logic_total = self.ops_lpe * self.dim_lpeset.size() * cnt_lpeset
-        #print('''Hey testing ops_logic_total: {}'''.format(ops_logic_total))
+        print('''Hey testing ops_logic_total: {}'''.format(ops_logic_total))
         #print('''Hey testing size_dim_lpeset: {}'''.format(self.dim_lpeset.size()))
         assert ops_logic_total == self.layer.total_ops(self.batch_size)
         
@@ -261,6 +263,14 @@ class MapStrategyEyeriss(MapStrategy):
             #          gbuf: {}'''.format(nld.total_access_at_of(me.DRAM, de.FIL)
             #                            ,nld.total_access_at_of(me.REGF, de.FIL)
             #                            ,nld.total_access_at_of(me.GBUF, de.FIL)
+            #                            ))
+            #print('''Hey testing ifm accessed from dram: {}, regf: {}, 
+            #          gbuf: {}'''.format(nld.total_access_at_of(me.DRAM, de.IFM)
+            #                            ,nld.total_access_at_of(me.REGF, de.IFM)
+            #                            ,nld.total_access_at_of(me.GBUF, de.IFM)
+            #                            ))
+            #print('''Hey testing dram accesses are : {}'''
+            #          .format(nld.total_access_at_of(me.DRAM)
             #                            ))
             util.assert_float_eq_int(
                 nld.total_access_at_of(me.DRAM, de.FIL),

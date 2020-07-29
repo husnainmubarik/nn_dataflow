@@ -35,10 +35,11 @@ class TestNNDataflow(unittest.TestCase):
         self.map_strategy = MapStrategyEyeriss
         
         value_mult = {}
-        value_control = {}
+        value_control = 1
         my_weights = {}
         self.cost = Cost(value_control = value_control,
                          value_mult = value_mult,
+                         adder_cost = 1,
                          mac_op=1,
                          mem_hier=(200, 6, 2, 1),
                          noc_hop=0,
@@ -89,11 +90,12 @@ class TestNNDataflow(unittest.TestCase):
         print('''Hey num weights in conv1 are {} '''.format(len(array_qint8)))
         # hardware costs
         mult_cost = readValueMult8Cost()
-        control_cost = readValueControl8Cost()
+        #control_cost = readValueControl8Cost()
         
-        cost = Cost(value_control=control_cost,
+        cost = Cost(value_control=1.92e-13,
                     value_mult=mult_cost,
                     mac_op=2e-12,
+                    adder_cost = (1.178e-5)/200000000,
                     mem_hier=(80e-12, 14e-12, 4e-12, 0.6e-12),  # pj/16-b
                     noc_hop=40e-12,
                     idl_unit=200e-12,
@@ -151,6 +153,9 @@ class TestNNDataflow(unittest.TestCase):
                 if not layer_part or not layer_part.startswith(layer):
                     continue
                 sr = dfsch_t16[layer_part]
+                print('Hey testing layer part is: {}'.format(layer_part))
+                print('Hey testing my test total_ops are: {}'
+                        .format(sr.total_ops))
                 op_cost += sr.total_ops * cost.mac_op
                 access_cost = [ac + a * c for ac, a, c
                                in zip(access_cost, sr.total_accesses,
