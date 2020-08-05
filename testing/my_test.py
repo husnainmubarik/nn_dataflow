@@ -1,6 +1,8 @@
 import unittest
 import sys
 import pdb
+import json
+import pickle
 
 sys.path.append('/home/mubarik3/DASICS/mult_exploration/mult_synthesis')
 sys.path.append('../')
@@ -44,7 +46,8 @@ class TestNNDataflow(unittest.TestCase):
                          mem_hier=(200, 6, 2, 1),
                          noc_hop=0,
                          idl_unit=0,
-                         my_weights=my_weights)
+                         my_weights=my_weights,
+                         mem_cycles=(200, 6, 2, 1))
 
         self.options = Option()
         
@@ -77,20 +80,40 @@ class TestNNDataflow(unittest.TestCase):
                             array_bus_width=float('inf'),
                             dram_bandwidth=float('inf'),
                             no_time_mux=False,
+                            num_value_pes=256,
                            )
 
         
         # model values
+        print('converting weights')
         q_weight_dict = {}
         weights_dict = read_weights()
-        for w_layer in ['conv1']:
-          array = convertToArray(weights_dict, 'conv1')
+        for w_layer in ['conv1', 'conv2', 'conv3','conv4','conv5', 'fc6', 'fc7',
+                          'fc8']:
+          array = convertToArray(weights_dict, w_layer)
           array_qint8 = quantizeWeights(array, 'qint8')
-          q_weight_dict['conv1'] = array_qint8
-        print('''Hey num weights in conv1 are {} '''.format(len(array_qint8)))
+          q_weight_dict[w_layer] = array_qint8
+        #print('''Hey num weights in conv1 are {} '''.format(len(array_qint8)))
         # hardware costs
         mult_cost = readValueMult8Cost()
         #control_cost = readValueControl8Cost()
+        print('done converting weights')
+        
+        #with open('weights.pickle', 'wb') as f:
+        #  pickle.dump(q_weight_dict,f)
+
+        #counter = 0
+        #c = 0
+        #for m in mult_cost.keys():
+        #  c += mult_cost[m]
+        #  counter += 1
+        #ave = c/counter
+        #print('{} '.format(counter))
+        #print('average = {}'.format(ave))
+        #print('conv3 weights are')
+        #for w in q_weight_dict['conv1']:
+        #  print(w)
+        #exit()
         
         cost = Cost(value_control=1.92e-13,
                     value_mult=mult_cost,
@@ -99,7 +122,8 @@ class TestNNDataflow(unittest.TestCase):
                     mem_hier=(80e-12, 14e-12, 4e-12, 0.6e-12),  # pj/16-b
                     noc_hop=40e-12,
                     idl_unit=200e-12,
-                    my_weights=q_weight_dict)
+                    my_weights=q_weight_dict,
+                    mem_cycles=(200, 6, 2, 1))
 
         #cost = cost(value_control=control_cost,
         #            value_mult=mult_cost,
@@ -153,9 +177,6 @@ class TestNNDataflow(unittest.TestCase):
                 if not layer_part or not layer_part.startswith(layer):
                     continue
                 sr = dfsch_t16[layer_part]
-                print('Hey testing layer part is: {}'.format(layer_part))
-                print('Hey testing my test total_ops are: {}'
-                        .format(sr.total_ops))
                 op_cost += sr.total_ops * cost.mac_op
                 access_cost = [ac + a * c for ac, a, c
                                in zip(access_cost, sr.total_accesses,

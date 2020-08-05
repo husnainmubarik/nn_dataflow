@@ -16,6 +16,7 @@ program. If not, see <https://opensource.org/licenses/BSD-3-Clause>.
 
 from collections import defaultdict
 import sys
+import json
 
 from . import partition
 from .cost import Cost
@@ -27,6 +28,10 @@ from .network import Network
 from .nn_dataflow_scheme import NNDataflowScheme
 from .resource import Resource
 from .scheduling import SchedulingCondition, Scheduling
+
+# Value changes 
+from .layer import Layer, ConvLayer, LocalRegionLayer
+from .cal_value_cost import ValueCost
 
 class NNDataflow():
     '''
@@ -69,7 +74,79 @@ class NNDataflow():
         self.ilp = InterLayerPipeline(self.network, self.batch_size,
                                       self.resource)
         self.ordered_layer_list = self.ilp.ordered_layer_list()
+        
+        
+        # value specific changes
+        #TODO: move the following function calls out of init and add it as 
+        # a separet tool independednt of nn_dataflow while keeping basic 
+        # nn_dataflow files such as cost.py, resource.py, layer.py, network.py
 
+        #for layer_name in self.network:
+        #  if layer_name in ['conv3_a']:
+        #    value_cost_obj = ValueCost(
+        #                               layer,
+        #                               self.cost,
+        #                               self.resource,
+        #                               self.batch_size,
+        #                               layer_name,
+        #                               )
+        #    value_cost_obj.proposed_arch_cycles()
+
+        
+        my_json_dict = {}
+        for layer_name in self.network:
+          if layer_name not in ['pool1_a','pool1_b',
+                                'pool2_a','pool2_b',
+                                'pool3_a','pool3_b']:
+            print('calculating layer: {}'.format(layer_name))
+            layer = self.network[layer_name]
+            value_cost_obj = ValueCost(
+                                       layer,
+                                       self.cost,
+                                       self.resource,
+                                       self.batch_size,
+                                       layer_name,
+                                       )
+
+            my_json_dict[layer_name] = {}
+            my_json_dict[layer_name]['PE-matrix cost'] = \
+                          value_cost_obj.value_logic_cost()
+            my_json_dict[layer_name]['Control-logic cost'] = \
+                          value_cost_obj.value_control_logic_cost()
+            my_json_dict[layer_name]['Control-regf cost'] = \
+                          value_cost_obj.value_control_regf_cost()
+            my_json_dict[layer_name]['GBUF cost'] = \
+                          value_cost_obj.value_gbuf_cost()
+            my_json_dict[layer_name]['DRAM cost'] = \
+                          value_cost_obj.value_dram_cost()
+            my_json_dict[layer_name]['Adders cost'] = \
+                          value_cost_obj.value_adder_cost()
+            my_json_dict[layer_name]['Array cost'] = \
+                          value_cost_obj.value_noc_cost()
+            
+            logic_timing_all_ofm = value_cost_obj.value_logic_timing_for_all_ofm()
+            memory_timing_all_ofm = value_cost_obj.\
+                                    value_memory_access_timing_for_all_ofm()
+            logic_timing_one_ofm = value_cost_obj.value_logic_timing_for_one_ofm()
+            memory_timing_one_ofm = value_cost_obj.\
+                                    value_memory_access_timing_for_one_ofm()
+            
+            my_json_dict[layer_name]['All-ofm-PE-matrix cycles'] = \
+                          logic_timing_all_ofm
+            my_json_dict[layer_name]['All-ofm-mem-access cycles'] = \
+                          memory_timing_all_ofm
+            my_json_dict[layer_name]['One-ofm-PE-matrix cycles'] = \
+                          logic_timing_one_ofm
+            my_json_dict[layer_name]['One-ofm-mem-access cycles'] = \
+                          memory_timing_one_ofm
+            my_json_dict[layer_name]['Static cost'] = \
+                          value_cost_obj.\
+                          value_static_cost(max(logic_timing_all_ofm,
+                                                memory_timing_all_ofm))
+
+
+        with open('layer_information.json', 'w') as f:
+          json.dump(my_json_dict, f)
         
         # NNDataflowScheme tops.
         # The top schemes are organized by the ending layers, and keeping
@@ -163,7 +240,7 @@ class NNDataflow():
             h, m = sched.cache_stats()
             cache_hits += h
             cache_misses += m
-        
+
         #print('''Hey testing from sched search total ops are {} alu cost should 
         #       be {} pJ'''.format(nndf_tops[0].total_ops, 
         #                       nndf_tops[0].total_ops*2e-12))
@@ -224,7 +301,6 @@ class NNDataflow():
 
         # Max allowed time overhead for segment timing.
         max_time_ovhd = options.layer_pipeline_time_ovhd
-        #print('''Hey testing max allowed ove time {}'''.format(max_time_ovhd))
         # Cost hint Pareto-optimal frontier.
         frontier = set()
 
@@ -287,7 +363,6 @@ class NNDataflow():
         layer_sched = self.layer_sched_dict[layer_name]
         for prev_nndf in prev_nndf_tops:
             ifmap_layout = prev_nndf.fmap_layout(self.network.prevs(layer_name))
-            #print('''Hey testing ifmaps layout is {}'''.format(ifmap_layout))
             if fwd_data_region is not None:
                 # Remap source data regions to the forwarding region.
                 ifmap_layout = DataLayout(
@@ -328,7 +403,7 @@ class NNDataflow():
                 nndf_tops.append(nndf)
 
             #TODO: fix it later
-            return sorted(nndf_tops, key=self.cmp_key)[:options.ntops]
+            #return sorted(nndf_tops, key=self.cmp_key)[:options.ntops]
         # Always pick and keep top n at each layer.
         return sorted(nndf_tops, key=self.cmp_key)[:options.ntops]
 

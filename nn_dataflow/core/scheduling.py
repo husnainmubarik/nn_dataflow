@@ -14,7 +14,6 @@ You should have received a copy of the Modified BSD-3 License along with this
 program. If not, see <https://opensource.org/licenses/BSD-3-Clause>.
 """
 
-import sys
 from collections import OrderedDict, namedtuple
 import math
 import fastcache
@@ -32,10 +31,6 @@ from .layer import Layer
 from .map_strategy import MapStrategy
 from .resource import Resource
 from .scheduling_constraint import SchedulingConstraint
-
-# Value changes 
-from .layer import Layer, ConvLayer, LocalRegionLayer
-from .cal_value_cost import ValueCost
 
 class SchedulingCondition(namedtuple('SchedulingCondition',
                                      ['resource',
@@ -183,6 +178,7 @@ class Scheduling():
 
         resource = condition.resource
         proc_region = resource.proc_region
+
         # Ifmap layout.
         ifmap_layout = condition.ifmap_layout
         # Ifmap should be from the source data region or local.
@@ -199,23 +195,14 @@ class Scheduling():
 
         # Filter nodes. All memory nodes can store filters. Deduplicate.
         filter_nodes = frozenset(resource.dram_region.iter_node())
+
         # Explore parallel partitioning schemes.
         for part in partition.gen_partition(self.layer, self.batch_size,
                                             proc_region.dim, options,
                                             guaranteed=True):
             # Explore single-node schedules.
-            # value specific changes
-            lbs_tops_temp = self.schedule_search_per_node(
-                part, resource, condition.constraint, options)
-            if lbs_tops_temp == None:
-              #print('Hey testing none was received')
-              continue
-            lbs_tops = list(lbs_tops_temp)
-            
-            # value specific changes end remove lbs_tops from comments 
-            #lbs_tops = list(self.schedule_search_per_node(
-            #    part, resource, condition.constraint, options))
-            
+            lbs_tops = list(self.schedule_search_per_node(
+                part, resource, condition.constraint, options))
             if not lbs_tops:
                 continue
 
@@ -235,17 +222,11 @@ class Scheduling():
                 self.layer, self.batch_size, proc_region, part,
                 filter_nodes, ifmap_layout, ofmap_layout, options)
 
-            #TODO: verify following changes 
-            for lbs in lbs_tops:
-              tops += [self._get_result(lbs, part, ofmap_layout,
-                                        condition.sched_seq, unit_nhops)]
-              break
-            
             # Make scheduling result.
-            #tops += [self._get_result(lbs, part, ofmap_layout,
-            #                          condition.sched_seq, unit_nhops)
-            #         for lbs in lbs_tops]
-            #break
+            tops += [self._get_result(lbs, part, ofmap_layout,
+                                      condition.sched_seq, unit_nhops)
+                     for lbs in lbs_tops]
+
         # Pick the top n.
         tops = sorted(tops, key=self.cmp_key)[:options.ntops]
 
@@ -279,19 +260,12 @@ class Scheduling():
         single node after partitioning. Return the top LoopBlockingScheme
         instances.
         '''
-        #print('Hey testing scheduling_search_per_node is called')
         lbs_tops = []
 
         # Partitioned layer.
         p_layer, p_batch_size, p_occ = part.part_layer(self.layer,
                                                        self.batch_size)
-        if isinstance(self.layer, ConvLayer):
-          if p_layer.wfil != self.layer.wfil or p_layer.wofm != self.layer.wofm \
-             or p_layer.hfil != self.layer.hfil \
-             or p_layer.hofm != self.layer.hofm:
-            return None
 
-        
         # Mapping strategy.
         map_strategy = self.map_strategy_class(p_layer, p_batch_size, p_occ,
                                                resource.dim_array)
@@ -333,12 +307,6 @@ class Scheduling():
 
         assert not math.isnan(cost_op + cost_access + cost_noc + cost_static)
 
-        value_cost_obj = ValueCost(lbs, self.layer, self.cost, self.batch_size)
-        value_cost_obj.value_gbuf_cost() 
-        #value_cost_obj.value_logic_cost() 
-        value_cost_obj.value_control_logic_cost() 
-        value_cost_obj.value_control_regf_cost() 
-        value_cost_obj.value_adder_cost() 
         # Overall stats.
         scheme['cost'] = cost_op + cost_access + cost_noc + cost_static
         scheme['time'] = lbs.time

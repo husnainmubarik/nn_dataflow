@@ -98,7 +98,7 @@ class LoopBlockingScheme():
 
         self.bl_ts = [tuple(bl_t) for bl_t in bl_ts]
         self.bl_ords = [tuple(bl_ord) for bl_ord in bl_ords]
-
+        #print('Hey testing: blocking factors are: {}'.format(self.bl_ts))
         # Check blocking.
         bl_tp = self._bl_tp(slice(None))
         for lpe in range(le.NUM):

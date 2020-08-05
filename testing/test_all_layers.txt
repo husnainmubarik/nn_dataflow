@@ -1,0 +1,182 @@
+ran
+converting weights
+num weights = 34944
+num weights = 307456
+num weights = 885120
+num weights = 663936
+num weights = 442624
+num weights = 37752832
+num weights = 16781312
+num weights = 4097000
+done converting weights
+Results: value specific PE-matrix cost is: 4.083307293608922e-09
+Results: value specific control logic cost is: 2.9680703999999998e-08
+Results: value specific control regf cost is: 9.275219999999999e-08
+Results: value specific gbuf access cost is: 4.440954e-06
+Results: value specific dram access cost is: 2.537688e-05
+Results: value specific adder cost is: 3.1044776400000003e-06
+Results: value specific PE-matrix cycles are: 2165900
+Results: value specific memory cycles for all ofm: 1032066
+Results: value specific PE-matrix cycles for one ofm are: 3384
+Results: value specific memory cycles for one ofm: 311352
+Results: value specific PE-matrix cost is: 4.083307293608922e-09
+Results: value specific control logic cost is: 2.9680703999999998e-08
+Results: value specific control regf cost is: 9.275219999999999e-08
+Results: value specific gbuf access cost is: 4.440954e-06
+Results: value specific dram access cost is: 2.537688e-05
+Results: value specific adder cost is: 3.1044776400000003e-06
+Results: value specific PE-matrix cycles are: 2165900
+Results: value specific memory cycles for all ofm: 1032066
+Results: value specific PE-matrix cycles for one ofm are: 3384
+Results: value specific memory cycles for one ofm: 311352
+Results: value specific PE-matrix cost is: 1.1387514432749085e-08
+Results: value specific control logic cost is: 8.856576e-09
+Results: value specific control regf cost is: 2.76768e-08
+Results: value specific gbuf access cost is: 4.10256e-06
+Results: value specific dram access cost is: 2.34432e-05
+Results: value specific adder cost is: 6.5952921600000006e-06
+Results: value specific PE-matrix cycles are: 5417928
+Results: value specific memory cycles for all ofm: 1198368
+Results: value specific PE-matrix cycles for one ofm are: 0
+Results: value specific memory cycles for one ofm: 12966
+Results: value specific PE-matrix cost is: 1.1387514432749085e-08
+Results: value specific control logic cost is: 8.856576e-09
+Results: value specific control regf cost is: 2.76768e-08
+Results: value specific gbuf access cost is: 4.10256e-06
+Results: value specific dram access cost is: 2.34432e-05
+Results: value specific adder cost is: 6.5952921600000006e-06
+Results: value specific PE-matrix cycles are: 5417928
+Results: value specific memory cycles for all ofm: 1198368
+Results: value specific PE-matrix cycles for one ofm are: 0
+Results: value specific memory cycles for one ofm: 12966
+Results: value specific PE-matrix cost is: 8.066341136650006e-09
+Results: value specific control logic cost is: 1.10592e-08
+Results: value specific control regf cost is: 3.456e-08
+Results: value specific gbuf access cost is: 7.453824e-06
+Results: value specific dram access cost is: 4.2593279999999996e-05
+Results: value specific adder cost is: 4.4033753088000004e-06
+Results: value specific PE-matrix cycles are: 4323020
+Results: value specific memory cycles for all ofm: 2999808
+Results: value specific PE-matrix cycles for one ofm are: 0
+Results: value specific memory cycles for one ofm: 15174
+Results: value specific PE-matrix cost is: 8.066341136650006e-09
+Results: value specific control logic cost is: 1.10592e-08
+Results: value specific control regf cost is: 3.456e-08
+Results: value specific gbuf access cost is: 7.453824e-06
+Results: value specific dram access cost is: 4.2593279999999996e-05
+Results: value specific adder cost is: 4.4033753088000004e-06
+Results: value specific PE-matrix cycles are: 4323020
+Results: value specific memory cycles for all ofm: 2999808
+Results: value specific PE-matrix cycles for one ofm are: 0
+Results: value specific memory cycles for one ofm: 15174
+Results: value specific PE-matrix cost is: 4.7654722893680855e-09
+Results: value specific control logic cost is: 8.2944e-09
+Results: value specific control regf cost is: 2.592e-08
+Results: value specific gbuf access cost is: 5.703936e-06
+Results: value specific dram access cost is: 3.259392e-05
+Results: value specific adder cost is: 3.3025314816000003e-06
+Results: value specific PE-matrix cycles are: 2378506
+Results: value specific memory cycles for all ofm: 2249856
+Results: value specific PE-matrix cycles for one ofm are: 0
+Results: value specific memory cycles for one ofm: 11718
+Results: value specific PE-matrix cost is: 4.7654722893680855e-09
+Results: value specific control logic cost is: 8.2944e-09
+Results: value specific control regf cost is: 2.592e-08
+Results: value specific gbuf access cost is: 5.703936e-06
+Results: value specific dram access cost is: 3.259392e-05
+Results: value specific adder cost is: 3.3025314816000003e-06
+Results: value specific PE-matrix cycles are: 2378506
+Results: value specific memory cycles for all ofm: 2249856
+Results: value specific PE-matrix cycles for one ofm are: 0
+Results: value specific memory cycles for one ofm: 11718
+Results: value specific PE-matrix cost is: 2.843679692534285e-09
+Results: value specific control logic cost is: 8.2944e-09
+Results: value specific control regf cost is: 2.592e-08
+Results: value specific gbuf access cost is: 4.004224e-06
+Results: value specific dram access cost is: 2.288128e-05
+Results: value specific adder cost is: 2.2016876544000002e-06
+Results: value specific PE-matrix cycles are: 4669977
+Results: value specific memory cycles for all ofm: 1586304
+Results: value specific PE-matrix cycles for one ofm are: 0
+Results: value specific memory cycles for one ofm: 11718
+Results: value specific PE-matrix cost is: 2.843679692534285e-09
+Results: value specific control logic cost is: 8.2944e-09
+Results: value specific control regf cost is: 2.592e-08
+Results: value specific gbuf access cost is: 4.004224e-06
+Results: value specific dram access cost is: 2.288128e-05
+Results: value specific adder cost is: 2.2016876544000002e-06
+Results: value specific PE-matrix cycles are: 4669977
+Results: value specific memory cycles for all ofm: 1586304
+Results: value specific PE-matrix cycles for one ofm are: 0
+Results: value specific memory cycles for one ofm: 11718
+Results: value specific PE-matrix cost is: 4.3049591415688e-09
+Results: value specific control logic cost is: 1.769472e-09
+Results: value specific control regf cost is: 5.5296e-09
+Results: value specific gbuf access cost is: 0.000528668672
+Results: value specific dram access cost is: 0.00302096384
+Results: value specific adder cost is: 2.2234005504e-06
+Results: value specific PE-matrix cycles are: 2539273
+Results: value specific memory cycles for all ofm: 226547712
+Results: value specific PE-matrix cycles for one ofm are: 0
+Results: value specific memory cycles for one ofm: 55512
+Results: value specific PE-matrix cost is: 1.7260931108285744e-09
+Results: value specific control logic cost is: 7.86432e-10
+Results: value specific control regf cost is: 2.4576e-09
+Results: value specific gbuf access cost is: 0.000234995712
+Results: value specific dram access cost is: 0.00134283264
+Results: value specific adder cost is: 9.881780224000001e-07
+Results: value specific PE-matrix cycles are: 1882282
+Results: value specific memory cycles for all ofm: 100687872
+Results: value specific PE-matrix cycles for one ofm are: 0
+Results: value specific memory cycles for one ofm: 24582
+Results: value specific PE-matrix cost is: 1.0662013885541649e-10
+Results: value specific control logic cost is: 7.86432e-10
+Results: value specific control regf cost is: 2.4576e-09
+Results: value specific gbuf access cost is: 5.7415344e-05
+Results: value specific dram access cost is: 0.00032808767999999996
+Results: value specific adder cost is: 2.4125440000000005e-07
+Results: value specific PE-matrix cycles are: 430364
+Results: value specific memory cycles for all ofm: 24600576
+Results: value specific PE-matrix cycles for one ofm are: 0
+Results: value specific memory cycles for one ofm: 24582
+t16 ops: 725508992.0
+t16_time: 304884
+t16_energy: 0.009625546275199999
+conv1_a,
+pool1_a,
+conv2_a,
+pool2_a,
+conv1_b,
+pool1_b,
+conv2_b,
+pool2_b,
+conv3_a,
+conv4_a,
+conv5_a,
+pool3_a,
+conv3_b,
+conv4_b,
+conv5_b,
+pool3_b,
+fc1,
+fc2,
+fc3,
+[0.1054152, 0.04958592, 0.0, 0.02409792, 0.12649824]
+[0.000629856, 0.01683456, 0.0, 0.001419264, 0.0005668704]
+[0.2239488, 0.07784448, 0.0, 0.02774016, 0.26873855999999996]
+[0.000389376, 0.010158079999999998, 0.0, 0.00086016, 0.0003504384]
+[0.1054152, 0.04958592, 0.0, 0.02409792, 0.12649824]
+[0.000629856, 0.01683456, 0.0, 0.001419264, 0.0005668704]
+[0.2239488, 0.07784448, 0.0, 0.02774016, 0.26873855999999996]
+[0.000389376, 0.010158079999999998, 0.0, 0.00086016, 0.0003504384]
+[0.149520384, 0.11781119999999999, 0.0, 0.03677184, 0.1794244608]
+[0.112140288, 0.08905727999999999, 0.0, 0.027998208, 0.1345683456]
+[0.074760192, 0.07043072, 0.0, 0.021245952, 0.0897122304]
+[8.2944e-05, 0.00223232, 0.0, 0.000175104, 7.464960000000001e-05]
+[0.149520384, 0.11781119999999999, 0.0, 0.03677184, 0.1794244608]
+[0.112140288, 0.08905727999999999, 0.0, 0.027998208, 0.1345683456]
+[0.074760192, 0.07043072, 0.0, 0.021245952, 0.0897122304]
+[8.2944e-05, 0.00223232, 0.0, 0.000175104, 7.464960000000001e-05]
+[0.075497472, 3.03202304, 0.0, 0.15944908799999996, 0.09059696639999999]
+[0.033554431999999995, 1.34774784, 0.0, 0.07100825599999999, 0.04026531839999999]
+[0.008192000000000001, 0.33562496, 0.0, 0.020241536, 0.0098304]

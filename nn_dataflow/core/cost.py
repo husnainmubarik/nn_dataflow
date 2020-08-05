@@ -26,6 +26,7 @@ COST_LIST = ['value_control',
              'noc_hop',
              'idl_unit',
              'my_weights',
+             'mem_cycles',
             ]
 
 class Cost(namedtuple('Cost', COST_LIST)):
@@ -43,6 +44,11 @@ class Cost(namedtuple('Cost', COST_LIST)):
             raise TypeError('Cost: mem_hier must be a tuple')
         if len(ntp.mem_hier) != me.NUM:
             raise ValueError('Cost: mem_hier must have length {}'
+                             .format(me.NUM))
+        if not isinstance(ntp.mem_cycles, tuple):
+            raise TypeError('Cost: mem_cycles must be a tuple')
+        if len(ntp.mem_cycles) != me.NUM:
+            raise ValueError('Cost: mem_cycles must have length {}'
                              .format(me.NUM))
         if hasattr(ntp.noc_hop, '__len__'):
             raise TypeError('Cost: noc_hop must be a scalar')

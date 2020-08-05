@@ -30,6 +30,7 @@ RESOURCE_LIST = ['proc_region',
                  'array_bus_width',
                  'dram_bandwidth',
                  'no_time_mux',
+                 'num_value_pes',
                 ]
 
 class Resource(namedtuple('Resource', RESOURCE_LIST)):
